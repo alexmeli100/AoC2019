@@ -1,6 +1,6 @@
 defmodule Solution do
 
-  def main(args) do
+  def main(_args) do
     input = "input.txt"
 
     modules = process_input(input)
@@ -10,7 +10,7 @@ defmodule Solution do
   end
 
   def part1(modules) do
-    modules |> Enum.map(&(floor(&1 / 3) - 2)) |> Enum.sum
+    modules |> Enum.map(&(div(&1, 3) - 2)) |> Enum.sum
   end
 
   def part2(modules) do
@@ -20,7 +20,7 @@ defmodule Solution do
 
   def fuel(mass) do
     mass
-      |> Stream.iterate(&(floor(&1 / 3) - 2))
+      |> Stream.iterate(&(div(&1, 3) - 2))
       |> Enum.take_while(&(&1 > 0))
       |> Enum.drop(1)
       |> Enum.sum
