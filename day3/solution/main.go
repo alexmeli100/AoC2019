@@ -104,7 +104,6 @@ func main() {
 
 func parseFile(path string) []Wire {
 	var wires []Wire
-
 	bytes, err := ioutil.ReadFile(path)
 
 	if err != nil {
