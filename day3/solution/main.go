@@ -126,7 +126,7 @@ func newWire(s string) Wire {
 
 	for _, x := range p {
 		dir := rune(x[0])
-		step, err := strconv.Atoi(string(x[1:]))
+		step, err := strconv.Atoi(x[1:])
 
 		if err != nil {
 			log.Fatal(err)
