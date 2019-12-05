@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/deckarep/golang-set"
 	"io/ioutil"
 	"log"
 	"strconv"
 	"strings"
+
+	mapset "github.com/deckarep/golang-set"
 )
 
 type Path struct {
