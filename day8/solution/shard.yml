@@ -1,0 +1,13 @@
+name: solution
+version: 0.1.0
+
+authors:
+  - Alex <alexmeli100@gmail.com>
+
+targets:
+  solution:
+    main: src/solution.cr
+
+crystal: 0.31.1
+
+license: MIT
