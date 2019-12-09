@@ -11,7 +11,7 @@ type Io interface {
 type IntCode struct {
 	tape []int
 	pc   int
-	io   Io
+	Io   Io
 	base int
 	Last int
 	halt bool
@@ -48,7 +48,7 @@ func NewVm(tape []int, io Io) *IntCode {
 		tape: t,
 		pc:   0,
 		base: 0,
-		io:   io,
+		Io:   io,
 		halt: false,
 	}
 }
@@ -121,7 +121,7 @@ func mul(vm *IntCode, m []mode) {
 func read(vm *IntCode, m []mode) {
 	//vm.tape[vm.getValue(m[0], vm.pc+1)] = <-vm.In
 	//vm.pc += 2
-	input := vm.io.Read()
+	input := vm.Io.Read()
 	switch m[0] {
 	case pos:
 		vm.tape[vm.tape[vm.pc+1]] = input
@@ -135,7 +135,7 @@ func read(vm *IntCode, m []mode) {
 
 func write(vm *IntCode, m []mode) {
 	vm.Last = vm.getValue(m[0], 1)
-	vm.io.Write(vm.Last)
+	vm.Io.Write(vm.Last)
 	vm.pc += 2
 }
 
