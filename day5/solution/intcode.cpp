@@ -56,8 +56,6 @@ void IntCode::eval(int input) {
             exit = true;
             break;
     }
-
-    previous = op;
 }
 
 int IntCode::get_param(Mode m, int value) {

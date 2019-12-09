@@ -24,7 +24,6 @@ private:
     std::vector<int> instructions;
     unsigned int pos{};
     bool exit{};
-    int previous{3};
 };
 
 #endif //SOLUTION_INTCODE_H
