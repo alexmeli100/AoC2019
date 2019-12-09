@@ -111,6 +111,7 @@ func read(vm *IntCode, m []mode) {
 	default:
 		log.Fatal("Invalid param mode ", m[0])
 	}
+	vm.pc += 2
 }
 
 func write(vm *IntCode, m []mode) {
