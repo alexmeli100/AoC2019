@@ -23,7 +23,7 @@ func main() {
 		wg.Done()
 	}()
 
-	vm.In <- 1
+	vm.In <- 2
 	vm.Run()
 	wg.Wait()
 }
