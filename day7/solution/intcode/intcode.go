@@ -2,11 +2,16 @@ package intcode
 
 import "log"
 
+type Io interface {
+	Read() int
+	Write(value int)
+	Close()
+}
+
 type IntCode struct {
 	tape []int
 	pc   int
-	In   chan int
-	Out  chan int
+	io   Io
 	base int
 	Last int
 	halt bool
@@ -35,7 +40,7 @@ const (
 	Memory int  = 8000
 )
 
-func NewVm(tape []int) *IntCode {
+func NewVm(tape []int, io Io) *IntCode {
 	t := make([]int, Memory)
 	copy(t, tape)
 
@@ -43,32 +48,31 @@ func NewVm(tape []int) *IntCode {
 		tape: t,
 		pc:   0,
 		base: 0,
-		In:   make(chan int, 2),
-		Out:  make(chan int, 2),
+		io:   io,
 		halt: false,
 	}
 }
 
-func (vm *IntCode) putValue(m mode, p int, value int) {
+func (vm *IntCode) putValue(m mode, offset int, value int) {
 	switch m {
 	case pos:
-		vm.tape[p] = value
+		vm.tape[vm.tape[vm.pc+offset]] = value
 	case rel:
-		vm.tape[vm.base+p] = value
+		vm.tape[vm.base+vm.tape[vm.pc+offset]] = value
 	default:
 		log.Fatal("Unsupported mode")
 	}
 }
 
-func (vm *IntCode) getValue(m mode, value int) int {
+func (vm *IntCode) getValue(m mode, offset int) int {
 
 	if m == imm {
-		return value
+		return vm.tape[vm.pc+offset]
 	} else if m == rel {
-		return vm.tape[vm.base+value]
+		return vm.tape[vm.base+vm.tape[vm.pc+offset]]
 	}
 
-	return vm.tape[value]
+	return vm.tape[vm.tape[vm.pc+offset]]
 }
 
 func (vm *IntCode) nextOp() (int, []mode) {
@@ -98,27 +102,27 @@ func (vm *IntCode) Run() {
 	for !vm.halt {
 		vm.eval()
 	}
-	close(vm.Out)
+	vm.io.Close()
 }
 
 // OPCODES
 
 func add(vm *IntCode, m []mode) {
-	res := vm.getValue(m[0], vm.tape[vm.pc+1]) + vm.getValue(m[1], vm.tape[vm.pc+2])
-	vm.putValue(m[2], vm.tape[vm.pc+3], res)
+	res := vm.getValue(m[0], 1) + vm.getValue(m[1], 2)
+	vm.putValue(m[2], 3, res)
 	vm.pc += 4
 }
 
 func mul(vm *IntCode, m []mode) {
-	res := vm.getValue(m[0], vm.tape[vm.pc+1]) * vm.getValue(m[1], vm.tape[vm.pc+2])
-	vm.putValue(m[2], vm.tape[vm.pc+3], res)
+	res := vm.getValue(m[0], 1) * vm.getValue(m[1], 2)
+	vm.putValue(m[2], 3, res)
 	vm.pc += 4
 }
 
 func read(vm *IntCode, m []mode) {
 	//vm.tape[vm.getValue(m[0], vm.pc+1)] = <-vm.In
 	//vm.pc += 2
-	input := <-vm.In
+	input := vm.io.Read()
 	switch m[0] {
 	case pos:
 		vm.tape[vm.tape[vm.pc+1]] = input
@@ -131,55 +135,55 @@ func read(vm *IntCode, m []mode) {
 }
 
 func write(vm *IntCode, m []mode) {
-	vm.Last = vm.getValue(m[0], vm.tape[vm.pc+1])
-	vm.Out <- vm.Last
+	vm.Last = vm.getValue(m[0], 1)
+	vm.io.Write(vm.Last)
 	vm.pc += 2
 }
 
 func jumpTrue(vm *IntCode, m []mode) {
-	if vm.getValue(m[0], vm.tape[vm.pc+1]) != 0 {
-		vm.pc = vm.getValue(m[1], vm.tape[vm.pc+2])
+	if vm.getValue(m[0], 1) != 0 {
+		vm.pc = vm.getValue(m[1], 2)
 	} else {
 		vm.pc += 3
 	}
 }
 
 func jumpFalse(vm *IntCode, m []mode) {
-	if vm.getValue(m[0], vm.tape[vm.pc+1]) == 0 {
-		vm.pc = vm.getValue(m[1], vm.tape[vm.pc+2])
+	if vm.getValue(m[0], 1) == 0 {
+		vm.pc = vm.getValue(m[1], 2)
 	} else {
 		vm.pc += 3
 	}
 }
 
 func lessThan(vm *IntCode, m []mode) {
-	p1 := vm.getValue(m[0], vm.tape[vm.pc+1])
-	p2 := vm.getValue(m[1], vm.tape[vm.pc+2])
+	p1 := vm.getValue(m[0], 1)
+	p2 := vm.getValue(m[1], 2)
 
 	if p1 < p2 {
-		vm.putValue(m[2], vm.tape[vm.pc+3], 1)
+		vm.putValue(m[2], 3, 1)
 	} else {
-		vm.putValue(m[2], vm.tape[vm.pc+3], 0)
+		vm.putValue(m[2], 3, 0)
 	}
 
 	vm.pc += 4
 }
 
 func equalTo(vm *IntCode, m []mode) {
-	p1 := vm.getValue(m[0], vm.tape[vm.pc+1])
-	p2 := vm.getValue(m[1], vm.tape[vm.pc+2])
+	p1 := vm.getValue(m[0], 1)
+	p2 := vm.getValue(m[1], 2)
 
 	if p1 == p2 {
-		vm.putValue(m[2], vm.tape[vm.pc+3], 1)
+		vm.putValue(m[2], 3, 1)
 	} else {
-		vm.putValue(m[2], vm.tape[vm.pc+3], 0)
+		vm.putValue(m[2], 3, 0)
 	}
 
 	vm.pc += 4
 }
 
 func changeBase(vm *IntCode, m []mode) {
-	vm.base += vm.getValue(m[0], vm.tape[vm.pc+1])
+	vm.base += vm.getValue(m[0], 1)
 	vm.pc += 2
 }
 

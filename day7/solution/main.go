@@ -11,14 +11,50 @@ import (
 
 type Thruster struct {
 	t    []int
-	amps []*intcode.IntCode
+	amps []*Amp
+}
+
+type Amp struct {
+	io *IoChannel
+	vm *intcode.IntCode
+}
+
+func NewAmp(tape []int) *Amp {
+	io := NewIOCHan()
+	vm := intcode.NewVm(tape, io)
+
+	return &Amp{io, vm}
+}
+
+type IoChannel struct {
+	in  chan int
+	out chan int
+}
+
+func (io *IoChannel) Read() int {
+	return <-io.in
+}
+
+func (io *IoChannel) Write(value int) {
+	io.out <- value
+}
+
+func (io *IoChannel) Close() {
+	close(io.out)
+}
+
+func NewIOCHan() *IoChannel {
+	in := make(chan int, 2)
+	out := make(chan int, 2)
+
+	return &IoChannel{in, out}
 }
 
 func NewThruster(t []int, tape []int) *Thruster {
-	amps := make([]*intcode.IntCode, len(t))
+	amps := make([]*Amp, len(t))
 
 	for i := 0; i < len(t); i++ {
-		amps[i] = intcode.NewVm(tape)
+		amps[i] = NewAmp(tape)
 	}
 
 	return &Thruster{t, amps}
@@ -27,15 +63,15 @@ func NewThruster(t []int, tape []int) *Thruster {
 func (thrust *Thruster) connect() {
 	last := len(thrust.t) - 1
 	for i := 0; i < last; i++ {
-		thrust.amps[i].In <- thrust.t[i]
-		thrust.amps[i+1].In = thrust.amps[i].Out
+		thrust.amps[i].io.in <- thrust.t[i]
+		thrust.amps[i+1].io.in = thrust.amps[i].io.out
 	}
 
-	thrust.amps[last].In <- thrust.t[last]
+	thrust.amps[last].io.in <- thrust.t[last]
 
-	thrust.amps[0].In = thrust.amps[last].Out
-	thrust.amps[0].In <- thrust.t[0]
-	thrust.amps[0].In <- 0
+	thrust.amps[0].io.in = thrust.amps[last].io.out
+	thrust.amps[0].io.in <- thrust.t[0]
+	thrust.amps[0].io.in <- 0
 }
 
 func (thrust *Thruster) signalLoop() int {
@@ -48,21 +84,21 @@ func (thrust *Thruster) signalLoop() int {
 
 		go func(i int) {
 			defer wg.Done()
-			thrust.amps[i].Run()
+			thrust.amps[i].vm.Run()
 		}(i)
 	}
 	wg.Wait()
-	return thrust.amps[len(thrust.amps)-1].Last
+	return thrust.amps[len(thrust.amps)-1].vm.Last
 }
 
 func (thrust *Thruster) signal() int {
 	out := 0
 
 	for i, v := range thrust.t {
-		thrust.amps[i].In <- v
-		thrust.amps[i].In <- out
-		thrust.amps[i].Run()
-		out = <-thrust.amps[i].Out
+		thrust.amps[i].io.in <- v
+		thrust.amps[i].io.in <- out
+		thrust.amps[i].vm.Run()
+		out = <-thrust.amps[i].io.out
 	}
 
 	return out
@@ -75,7 +111,7 @@ func signals(t []int, tape []int) []int {
 
 	for _, v := range perms {
 		thrust := NewThruster(v, tape)
-		res := thrust.signalLoop()
+		res := thrust.signal()
 		out = append(out, res)
 	}
 
