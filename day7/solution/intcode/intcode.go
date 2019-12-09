@@ -7,6 +7,7 @@ type IntCode struct {
 	pc   int
 	In   chan int
 	Out  chan int
+	base int
 	Last int
 	halt bool
 }
@@ -23,21 +24,25 @@ var opFuncs = map[int]opFunc{
 	6:  jumpFalse,
 	7:  lessThan,
 	8:  equalTo,
+	9:  changeBase,
 	99: halt,
 }
 
 const (
-	pos mode = 0
-	imm mode = 1
+	pos    mode = 0
+	imm    mode = 1
+	rel    mode = 2
+	Memory int  = 8000
 )
 
 func NewVm(tape []int) *IntCode {
-	t := make([]int, len(tape))
+	t := make([]int, Memory)
 	copy(t, tape)
 
 	return &IntCode{
 		tape: t,
 		pc:   0,
+		base: 0,
 		In:   make(chan int, 2),
 		Out:  make(chan int, 2),
 		halt: false,
@@ -47,6 +52,8 @@ func NewVm(tape []int) *IntCode {
 func (vm *IntCode) getValue(m mode, value int) int {
 	if m == imm {
 		return value
+	} else if m == rel {
+		return vm.tape[value+vm.base]
 	}
 
 	return vm.tape[value]
@@ -92,7 +99,7 @@ func mul(vm *IntCode, m []mode) {
 }
 
 func read(vm *IntCode, m []mode) {
-	vm.tape[vm.tape[vm.pc+1]] = <-vm.In
+	vm.tape[vm.getValue(m[0], vm.pc+1)] = <-vm.In
 	vm.pc += 2
 }
 
@@ -142,6 +149,11 @@ func equalTo(vm *IntCode, m []mode) {
 	}
 
 	vm.pc += 4
+}
+
+func changeBase(vm *IntCode, m []mode) {
+	vm.base += vm.tape[vm.pc+1]
+	vm.pc += 2
 }
 
 func halt(vm *IntCode, m []mode) {
