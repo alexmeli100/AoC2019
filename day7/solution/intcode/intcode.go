@@ -153,7 +153,7 @@ func equalTo(vm *IntCode, m []mode) {
 }
 
 func changeBase(vm *IntCode, m []mode) {
-	vm.base += vm.tape[vm.pc+1]
+	vm.base += vm.getValue(m[0], vm.tape[vm.pc+1])
 	vm.pc += 2
 }
 
