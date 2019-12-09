@@ -49,7 +49,19 @@ func NewVm(tape []int) *IntCode {
 	}
 }
 
+func (vm *IntCode) putValue(m mode, p int, value int) {
+	switch m {
+	case pos:
+		vm.tape[p] = value
+	case rel:
+		vm.tape[vm.base+p] = value
+	default:
+		log.Fatal("Unsupported mode")
+	}
+}
+
 func (vm *IntCode) getValue(m mode, value int) int {
+
 	if m == imm {
 		return value
 	} else if m == rel {
@@ -64,9 +76,11 @@ func (vm *IntCode) nextOp() (int, []mode) {
 	op := next % 100
 	next /= 100
 	p1 := next % 10
-	p2 := next / 10
+	next /= 10
+	p2 := next % 10
+	p3 := next / 10
 
-	return op, []mode{mode(p1), mode(p2)}
+	return op, []mode{mode(p1), mode(p2), mode(p3)}
 }
 
 func (vm *IntCode) eval() {
@@ -90,12 +104,14 @@ func (vm *IntCode) Run() {
 // OPCODES
 
 func add(vm *IntCode, m []mode) {
-	vm.tape[vm.tape[vm.pc+3]] = vm.getValue(m[0], vm.tape[vm.pc+1]) + vm.getValue(m[1], vm.tape[vm.pc+2])
+	res := vm.getValue(m[0], vm.tape[vm.pc+1]) + vm.getValue(m[1], vm.tape[vm.pc+2])
+	vm.putValue(m[2], vm.tape[vm.pc+3], res)
 	vm.pc += 4
 }
 
 func mul(vm *IntCode, m []mode) {
-	vm.tape[vm.tape[vm.pc+3]] = vm.getValue(m[0], vm.tape[vm.pc+1]) * vm.getValue(m[1], vm.tape[vm.pc+2])
+	res := vm.getValue(m[0], vm.tape[vm.pc+1]) * vm.getValue(m[1], vm.tape[vm.pc+2])
+	vm.putValue(m[2], vm.tape[vm.pc+3], res)
 	vm.pc += 4
 }
 
@@ -143,9 +159,9 @@ func lessThan(vm *IntCode, m []mode) {
 	p2 := vm.getValue(m[1], vm.tape[vm.pc+2])
 
 	if p1 < p2 {
-		vm.tape[vm.tape[vm.pc+3]] = 1
+		vm.putValue(m[2], vm.tape[vm.pc+3], 1)
 	} else {
-		vm.tape[vm.tape[vm.pc+3]] = 0
+		vm.putValue(m[2], vm.tape[vm.pc+3], 0)
 	}
 
 	vm.pc += 4
@@ -156,9 +172,9 @@ func equalTo(vm *IntCode, m []mode) {
 	p2 := vm.getValue(m[1], vm.tape[vm.pc+2])
 
 	if p1 == p2 {
-		vm.tape[vm.tape[vm.pc+3]] = 1
+		vm.putValue(m[2], vm.tape[vm.pc+3], 1)
 	} else {
-		vm.tape[vm.tape[vm.pc+3]] = 0
+		vm.putValue(m[2], vm.tape[vm.pc+3], 0)
 	}
 
 	vm.pc += 4
