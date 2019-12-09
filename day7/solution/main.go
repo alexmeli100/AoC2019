@@ -111,7 +111,7 @@ func signals(t []int, tape []int) []int {
 
 	for _, v := range perms {
 		thrust := NewThruster(v, tape)
-		res := thrust.signal()
+		res := thrust.signalLoop()
 		out = append(out, res)
 	}
 
