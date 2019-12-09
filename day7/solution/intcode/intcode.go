@@ -53,7 +53,7 @@ func (vm *IntCode) getValue(m mode, value int) int {
 	if m == imm {
 		return value
 	} else if m == rel {
-		return vm.base + vm.tape[value]
+		return vm.tape[vm.base+value]
 	}
 
 	return vm.tape[value]
