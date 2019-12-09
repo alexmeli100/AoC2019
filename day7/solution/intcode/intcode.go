@@ -100,8 +100,17 @@ func mul(vm *IntCode, m []mode) {
 }
 
 func read(vm *IntCode, m []mode) {
-	vm.tape[vm.getValue(m[0], vm.pc+1)] = <-vm.In
-	vm.pc += 2
+	//vm.tape[vm.getValue(m[0], vm.pc+1)] = <-vm.In
+	//vm.pc += 2
+	input := <-vm.In
+	switch m[0] {
+	case pos:
+		vm.tape[vm.tape[vm.pc+1]] = input
+	case rel:
+		vm.tape[vm.base+vm.tape[vm.pc+1]] = input
+	default:
+		log.Fatal("Invalid param mode ", m[0])
+	}
 }
 
 func write(vm *IntCode, m []mode) {
@@ -153,7 +162,7 @@ func equalTo(vm *IntCode, m []mode) {
 }
 
 func changeBase(vm *IntCode, m []mode) {
-	vm.base += vm.tape[vm.pc+1]
+	vm.base += vm.getValue(m[0], vm.tape[vm.pc+1])
 	vm.pc += 2
 }
 
