@@ -107,6 +107,7 @@ func read(vm *IntCode, m []mode) {
 	case pos:
 		vm.tape[vm.tape[vm.pc+1]] = input
 	case rel:
+		log.Println(vm.tape[vm.pc+1])
 		vm.tape[vm.base+vm.tape[vm.pc+1]] = input
 	default:
 		log.Fatal("Invalid param mode ", m[0])
