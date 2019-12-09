@@ -84,6 +84,7 @@ func (vm *IntCode) Run() {
 	for !vm.halt {
 		vm.eval()
 	}
+	close(vm.Out)
 }
 
 // OPCODES
