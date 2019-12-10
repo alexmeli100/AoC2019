@@ -8,20 +8,20 @@ import (
 )
 
 type IoChannel struct {
-	in  chan int
-	out chan int
+	In  chan int
+	Out chan int
 }
 
 func (io *IoChannel) Read() int {
-	return <-io.in
+	return <-io.In
 }
 
 func (io *IoChannel) Write(value int) {
-	io.out <- value
+	io.Out <- value
 }
 
 func (io *IoChannel) Close() {
-	close(io.out)
+	close(io.Out)
 }
 
 func NewIOCHan() *IoChannel {
