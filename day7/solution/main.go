@@ -92,23 +92,11 @@ func signals(t []int, tape []int) []int {
 	return out
 }
 
-func max(t []int) int {
-	max := t[0]
-
-	for _, v := range t {
-		if v > max {
-			max = v
-		}
-	}
-
-	return max
-}
-
 func main() {
 	input := goutils.ParseInput("input.txt")
 
 	sigs := signals([]int{9, 8, 7, 6, 5}, input)
-	out := max(sigs)
+	out := goutils.Max(sigs)
 
 	log.Println(out)
 }
