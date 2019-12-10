@@ -55,6 +55,18 @@ func ParseInput(path string) []int {
 	return res
 }
 
+func Max(t []int) int {
+	max := t[0]
+
+	for _, v := range t {
+		if v > max {
+			max = v
+		}
+	}
+
+	return max
+}
+
 // permutation implementation from https://stackoverflow.com/questions/30226438/generate-all-permutations-in-go
 func Permutations(arr []int) [][]int {
 	var helper func([]int, int)
