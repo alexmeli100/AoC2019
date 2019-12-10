@@ -56,7 +56,7 @@ func ParseInput(path string) []int {
 }
 
 // permutation implementation from https://stackoverflow.com/questions/30226438/generate-all-permutations-in-go
-func permutations(arr []int) [][]int {
+func Permutations(arr []int) [][]int {
 	var helper func([]int, int)
 	var res [][]int
 
