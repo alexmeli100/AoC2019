@@ -16,14 +16,14 @@ func main() {
 	wg.Add(1)
 
 	go func() {
-		for output := range io.out {
+		for output := range io.Out {
 			log.Println(output)
 		}
 		wg.Done()
 	}()
 
-	io.in <- 2
+	io.In <- 2
 	vm.Run()
-	close(io.out)
+	close(io.Out)
 	wg.Wait()
 }
