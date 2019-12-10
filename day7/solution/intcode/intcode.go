@@ -119,8 +119,6 @@ func mul(vm *IntCode, m []mode) {
 }
 
 func read(vm *IntCode, m []mode) {
-	//vm.tape[vm.getValue(m[0], vm.pc+1)] = <-vm.In
-	//vm.pc += 2
 	input := vm.Io.Read()
 	switch m[0] {
 	case pos:

@@ -1,12 +1,10 @@
-package main
+package goutils
 
 import (
-	"github.com/alexmeli100/AoC2019/day7/solution/intcode"
 	"io/ioutil"
 	"log"
 	"strconv"
 	"strings"
-	"sync"
 )
 
 type IoChannel struct {
@@ -33,28 +31,8 @@ func NewIOCHan() *IoChannel {
 	return &IoChannel{in, out}
 }
 
-func main() {
-	input := parseInput("input.txt")
-	var wg sync.WaitGroup
-
-	io := NewIOCHan()
-	vm := intcode.NewVm(input, io)
-	wg.Add(1)
-
-	go func() {
-		for output := range io.out {
-			log.Println(output)
-		}
-		wg.Done()
-	}()
-
-	io.in <- 2
-	vm.Run()
-	close(io.out)
-	wg.Wait()
-}
-
-func parseInput(path string) []int {
+// function for parsing intcode input
+func ParseInput(path string) []int {
 	bytes, err := ioutil.ReadFile(path)
 	var res []int
 
