@@ -53,6 +53,10 @@ func NewVm(tape []int, io Io) *IntCode {
 	}
 }
 
+func (vm *IntCode) WriteMemory(i int, value int) {
+	vm.tape[i] = value
+}
+
 func (vm *IntCode) putValue(m mode, offset int, value int) {
 	switch m {
 	case pos:
