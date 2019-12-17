@@ -44,7 +44,7 @@ class Moon(var pos: Pos, var vel: Velocity) {
     override fun toString() = String.format("$pos  $vel")
 }
 
-class Galaxy(var moons: MutableList<Moon>) {
+class Galaxy(private var moons: MutableList<Moon>) {
     private fun updateVel() {
         for (i in 0 until moons.size) {
             for (j in i+1 until moons.size) {
@@ -75,7 +75,6 @@ class Galaxy(var moons: MutableList<Moon>) {
             res += 1
         }
 
-        //g.moons.forEach { println(it)}
         return 2L * res
     }
 
@@ -83,6 +82,13 @@ class Galaxy(var moons: MutableList<Moon>) {
 }
 
 private val input by lazy { File("input.txt").readText() }
+
+fun part1(g: Galaxy) {
+    for (i in 0 until 1000)
+        g.update()
+
+    println("Total Energy is ${g.moonEnergies()}")
+}
 
 fun part2(g: Galaxy) {
     val c = (0..2).map { g.cycles(it) }.fold(1L) { acc, x -> lcm(acc, x) }
@@ -101,11 +107,6 @@ fun main() {
     }
 
     val galaxy = Galaxy(moons)
-
-//    for (i in 0 until 1000)
-//        galaxy.update()
-//
-//    println("Total Energy is ${galaxy.moonEnergies()}")
     part2(galaxy)
 
 }
