@@ -19,10 +19,10 @@ func (h *MessageHandler) Close() {
 	close(h.Out)
 }
 
-func (h *MessageHandler) Read() int {
+func (h *MessageHandler) Read() (int, error) {
 	input := <-h.In
 
-	return input
+	return input, nil
 }
 
 func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
@@ -44,8 +44,8 @@ func (h *MessageHandler) Write(value int) {
 
 func NewHandler() *MessageHandler {
 	return &MessageHandler{
-		In:  make(chan int),
-		Out: make(chan int),
+		In:  make(chan int, 1),
+		Out: make(chan int, 3),
 	}
 }
 
