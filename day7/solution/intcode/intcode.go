@@ -3,7 +3,7 @@ package intcode
 import "log"
 
 type Io interface {
-	Read() int
+	Read() (int, error)
 	Write(value int)
 	Close()
 }
@@ -119,7 +119,13 @@ func mul(vm *IntCode, m []mode) {
 }
 
 func read(vm *IntCode, m []mode) {
-	input := vm.Io.Read()
+	input, err := vm.Io.Read()
+
+	if err != nil {
+		log.Println("[Error] VM halted: %v", err)
+		vm.halt = true
+	}
+
 	switch m[0] {
 	case pos:
 		vm.tape[vm.tape[vm.pc+1]] = input
