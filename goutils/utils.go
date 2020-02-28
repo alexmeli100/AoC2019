@@ -12,8 +12,8 @@ type IoChannel struct {
 	Out chan int
 }
 
-func (io *IoChannel) Read() int {
-	return <-io.In
+func (io *IoChannel) Read() (int, error) {
+	return <-io.In, nil
 }
 
 func (io *IoChannel) Write(value int) {
